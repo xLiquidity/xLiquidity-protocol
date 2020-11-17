@@ -8,7 +8,7 @@ import "@openzeppelinV2/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelinV2/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelinV2/contracts/ownership/Ownable.sol";
 
-import "../interfaces/IController.sol";
+import "../../interfaces/IController.sol";
 
 contract Vault is ERC20, ERC20Detailed {
   /**

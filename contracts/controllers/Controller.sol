@@ -5,7 +5,7 @@ import "@openzeppelinV2/contracts/math/SafeMath.sol";
 import "@openzeppelinV2/contracts/utils/Address.sol";
 import "@openzeppelinV2/contracts/token/ERC20/SafeERC20.sol";
 
-import "../interfaces/IArb.sol";
+import "../../interfaces/IArb.sol";
 
 contract Controller {
   address public controller;
