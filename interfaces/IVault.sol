@@ -11,7 +11,7 @@ interface IVault {
 
   function decimals() external view returns (uint8);
 
-  function controller() external view returns (address);
+  function trader() external view returns (address);
 
   function getPricePerFullShare() external view returns (uint256);
 

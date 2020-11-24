@@ -1,16 +1,15 @@
 pragma solidity >=0.5.0;
 
-import "@openzeppelinV2/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelinV2/contracts/math/SafeMath.sol";
-import "@openzeppelinV2/contracts/utils/Address.sol";
-import "@openzeppelinV2/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelinV2/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelinV2/contracts/token/ERC20/ERC20Detailed.sol";
-import "@openzeppelinV2/contracts/ownership/Ownable.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/math/SafeMath.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/SafeERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
 
-import "../../interfaces/IController.sol";
+import "./Trader.sol";
 
-contract Vault is ERC20, ERC20Detailed {
+contract Vault is ERC20 {
   /**
         - user deposits funds into vault
         - user get lp tokens representing their share of the vault
@@ -30,30 +29,38 @@ contract Vault is ERC20, ERC20Detailed {
   uint256 public min = 9500;
   uint256 public max = 10000;
 
-  address public governance;
-  address public controller;
+  address public owner;
+  address public trader;
 
-  constructor(address _token, address _controller)
+  modifier onlyOwner() {
+    require(msg.sender == owner, "!owner");
+    _;
+  }
+
+  constructor(address _token, address _trader)
     public
-    // @dev creates the token associated with the vault (i.e.: if depositing ETH, then xETH)
-    ERC20Detailed(
-      string(abi.encodePacked("xliquidity ", ERC20Detailed(_token).name())),
-      string(abi.encodePacked("x", ERC20Detailed(_token).symbol())),
-      ERC20Detailed(_token).decimals()
+    /**
+     * @dev creates the token associated with the vault (i.e.: if depositing dai, then xDAI)
+     */
+    ERC20(
+      string(abi.encodePacked("xLiquidity ", ERC20(_token).name())),
+      string(abi.encodePacked("x", ERC20(_token).symbol()))
     )
   {
     token = IERC20(_token);
     owner = msg.sender;
-    controller = _controller;
+    trader = _trader;
   }
 
-  function setController(address _controller) public {
-    require(msg.sender == owner, "!owner");
-    controller = _controller;
+  function setOwner(address _owner) public onlyOwner {
+    owner = _owner;
   }
 
-  function setMin(uint256 _min) {
-    require(msg.sender == owner, "!owner");
+  function setTrader(address _trader) public onlyOwner {
+    trader = _trader;
+  }
+
+  function setMin(uint256 _min) external onlyOwner {
     min = _min;
   }
 
@@ -61,13 +68,13 @@ contract Vault is ERC20, ERC20Detailed {
   function balance() public view returns (uint256) {
     return
       token.balanceOf(address(this)).add(
-        IController(controller).balanceOf(address(token))
+        ITrader(trader).balanceOf(address(token))
       );
   }
 
   // amount in the vault available to be borrowed
   // custom logic goes here; can manipulate the min amount
-  function available() {
+  function available() public view returns (uint256) {
     return token.balanceOf(address(this)).mul(min).div(max);
   }
 
@@ -105,8 +112,8 @@ contract Vault is ERC20, ERC20Detailed {
     if (b < r) {
       uint256 _withdraw = r.sub(b);
 
-      // withdraw from the controller contract when there aren't enough funds in this contract
-      IController(controller).withdraw(address(token), _withdraw);
+      // withdraw from the trade contract when there aren't enough funds in this contract
+      ITrader(trader).withdraw(address(token), _withdraw);
 
       uint256 _after = token.balanceOf(address(this));
       uint256 _diff = _after.sub(b);
@@ -127,10 +134,10 @@ contract Vault is ERC20, ERC20Detailed {
     return balance().mul(1e18).div(totalSupply());
   }
 
-  // transfer available funds here to the controller for arb
-  function arb() public {
+  // transfer available funds here to the trader contract for trading
+  function trade() public onlyOwner {
     uint256 _bal = available();
-    token.safeTransfer(controller, _bal);
-    IController(controller).arb(address(token), _bal);
+    token.safeTransfer(trader, _bal);
+    ITrader(trader).arb(address(token), _bal);
   }
 }

@@ -1,6 +1,6 @@
-pragma solidity >=0.5.17;
+pragma solidity >=0.6.0;
 
-interface IController {
+interface ITrader {
   function withdraw(address, uint256) external;
 
   function balanceOf(address) external view returns (uint256);
