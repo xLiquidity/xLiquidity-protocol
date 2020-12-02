@@ -5,6 +5,8 @@ import "@openzeppelinV2/contracts/math/SafeMath.sol";
 import "@openzeppelinV2/contracts/utils/Address.sol";
 import "@openzeppelinV2/contracts/token/ERC20/SafeERC20.sol";
 import "@1inchProtocol/contracts/IOneSplit.sol";
+import "usingtellor/contracts/UsingTellor.sol";
+
 
 import "../../interfaces/ITrader.sol";
 
