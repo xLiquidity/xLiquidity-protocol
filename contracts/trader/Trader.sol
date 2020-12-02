@@ -6,26 +6,7 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/SafeERC20.sol";
 import "usingtellor/contracts/UsingTellor.sol";
 
-import "../../interfaces/IStrategy.sol";
-
-contract SampleUsingTellor is UsingTellor {
-
-  constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) public {}
-
-  function readTellorValue(uint256 _tellorID) external returns (uint256) {
-    //Helper function to get latest available value for that Id
-    (bool ifRetrieve, uint256 value, uint256 _timestampRetrieved) = getCurrentValue(_tellorID);
-    if(!ifRetrieve) return 0;
-    return value;
-  }
-
-  function readTellorValueBefore(uint256 _tellorId, uint256 _timestamp) external returns (uint256, uint256){
-    //Helper Function to get a value before the given timestamp
-    (bool _ifRetrieve, uint256 _value, uint256 _timestampRetrieved)  = getDataBefore(_tellorId, _timestamp);
-    if(!_ifRetrieve) return (0,0);
-    return (_value, _timestampRetrieved);
-  }
-}
+import "../../interfaces/IStrategy.sol"; 
 
 contract Trader {
     event ArbInitiated(address indexed _token, address indexed _vault, uint256 _amount);
