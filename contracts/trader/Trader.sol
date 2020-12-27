@@ -55,3 +55,4 @@ contract Trader {
         emit ArbInitiated(_token, _vault, _amount);
     }
 }
+
