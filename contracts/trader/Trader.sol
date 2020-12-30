@@ -47,7 +47,7 @@ contract Trader {
     @dev
     withdraws to the vault from the strategy
     must be called by the appropriate vault
-    /*
+    */
     function withdraw(address _token, uint256 _amount) public view {
         require(msg.sender == vaults[_token], "!vault");
         IStrategy(strategies[_token]).withdraw(_amount);
