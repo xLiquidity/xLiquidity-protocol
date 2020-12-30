@@ -27,11 +27,14 @@ contract Trader {
         trader = _trader;
     }
 
+
+    /// @dev determines the vault in which the trader contract can withdraw and deposit funds to 
     function setVault(address _token, address _vault) public onlyTrader {
         require(vaults[_token] == address(0), "vault"); // additional protection so we don't burn the funds
         vaults[_token] = _vault;
     }
 
+    /// @dev determines the strategy in which the trader contract can withdraw and deposit funds to
     function setStrategy(address _token, address _strategy) public onlyTrader {
         strategies[_token] = _strategy;
     }
@@ -40,13 +43,17 @@ contract Trader {
         return IStrategy(strategies[_token]).balanceOf();
     }
 
-    // withdraws to the vault from the strategy
-    // must be called by the appropriate vault
+    /** 
+    @dev
+    withdraws to the vault from the strategy
+    must be called by the appropriate vault
+    /*
     function withdraw(address _token, uint256 _amount) public view {
         require(msg.sender == vaults[_token], "!vault");
         IStrategy(strategies[_token]).withdraw(_amount);
     }
-
+    
+    /// @dev signals that a arbitrage strategy has started
     function arb(
         address _token,
         address _vault,
