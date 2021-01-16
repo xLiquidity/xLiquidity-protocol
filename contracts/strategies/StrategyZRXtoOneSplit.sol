@@ -6,7 +6,6 @@ import "@openzeppelinV2/contracts/utils/Address.sol";
 import "@openzeppelinV2/contracts/token/ERC20/SafeERC20.sol";
 import "@1inchProtocol/contracts/IOneSplit.sol";
 
-
 import "../../interfaces/ITrader.sol";
 
 contract StrategyZRXtoOneSplit {
