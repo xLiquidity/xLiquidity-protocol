@@ -5,7 +5,7 @@ import "@openzeppelinV2/contracts/math/SafeMath.sol";
 import "@openzeppelinV2/contracts/utils/Address.sol";
 import "@openzeppelinV2/contracts/token/ERC20/SafeERC20.sol";
 
-import "../../interfaces/xliquidity-protocol/IController.sol";
+import ".././interfaces/xliquidity-protocol/IController.sol";
 
 /*
  A strategy must implement the following calls;
@@ -19,6 +19,33 @@ import "../../interfaces/xliquidity-protocol/IController.sol";
  Where possible, strategies must remain as immutable as possible, instead of updating variables, we update the contract by linking it in the controller
  
 */
+
+interface IOneSplit {
+    function swap(
+        IERC20 fromToken,
+        IERC20 destToken,
+        uint256 amount,
+        uint256 minReturn,
+        uint256[] memory distribution,
+        uint256 flags
+    ) public payable returns (uint256 returnAmount);
+
+    function getExpectedReturn(
+        address fromToken,
+        address destToken,
+        uint256 amount,
+        uint256 parts,
+        uint256 flags, // See constants in IOneSplit.sol
+        uint256 destTokenEthPriceTimesGasPrice
+    )
+        external
+        view
+        returns (
+            uint256 returnAmount,
+            uint256 estimateGasAmount,
+            uint256[] memory distribution
+        );
+}
 
 contract StrategyOneSplitArb {
     using SafeERC20 for IERC20;
@@ -52,7 +79,19 @@ contract StrategyOneSplitArb {
         return "StrategyOneSplitArb";
     }
 
-    function execute() public isAuthorized {}
+    function execute(
+        address fromTokenAddress,
+        address intermediaryTokenAddress,
+        uint256 _amount
+    ) public isAuthorized returns (uint256 prof) {
+        uint256(returnAmount, estimatedGasAmount, _) = getExpectedReturn(fromTokenAddress, intermediaryTokenAddress, _amount);
+        require(returnAmount.sub(estimatedGasAmount > _amount), "!prof");
+
+        uint256 firstSwapOutput = swap(fromTokenAddress, intermediaryTokenAddress, _amount);
+        uint256 secondSwapOutput = swap(intermediaryTokenAddress, fromTokenAddress, _amount);
+        uint256 prof = secondSwapOutput.sub(_amount);
+        return prof;
+    }
 
     // Controller only function for creating additional rewards from dust
     function withdraw(IERC20 _asset) external isAuthorized returns (uint256 balance) {
