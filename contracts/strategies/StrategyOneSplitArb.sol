@@ -52,13 +52,19 @@ contract StrategyOneSplitArb {
     using Address for address;
     using SafeMath for uint256;
 
-    address public constant USDC_ADDRESS = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-
-    address public constant want = address(USDC_ADDRESS);
+    // the token the strategy is trying to accrue
+    address want;
 
     address public governance;
     address public controller;
     address public strategist;
+
+    constructor(address _controller, address _want) public {
+        want = _want;
+        governance = msg.sender;
+        strategist = msg.sender;
+        controller = _controller;
+    }
 
     modifier isAuthorized() {
         require(msg.sender == governance || msg.sender == strategist || msg.sender == controller || msg.sender == address(this), "!authorized");
@@ -69,25 +75,20 @@ contract StrategyOneSplitArb {
         require(msg.sender == controller, "!controller");
     }
 
-    constructor(address _controller) public {
-        governance = msg.sender;
-        strategist = msg.sender;
-        controller = _controller;
-    }
-
     function getName() external pure returns (string memory) {
         return "StrategyOneSplitArb";
     }
 
-    function execute(
-        address fromTokenAddress,
-        address intermediaryTokenAddress,
-        uint256 _amount
-    ) public isAuthorized returns (uint256 prof) {
-        uint256(returnAmount, estimatedGasAmount, _) = getExpectedReturn(fromTokenAddress, intermediaryTokenAddress, _amount);
+    function execute(address intermediaryTokenAddress, uint256 _amount) public isAuthorized returns (uint256 prof) {
+        uint256(firstReturnAmount, firstEstimatedGasAmount, _) = getExpectedReturn(want, intermediaryTokenAddress, _amount);
+        uint256(returnAmount, estimatedGasAmount, _) = getExpectedReturn(
+            intermediaryTokenAddress,
+            want,
+            firstReturnAmount.sub(firstEstimatedGasAmount)
+        );
         require(returnAmount.sub(estimatedGasAmount > _amount), "!prof");
 
-        uint256 firstSwapOutput = swap(fromTokenAddress, intermediaryTokenAddress, _amount);
+        uint256 firstSwapOutput = swap(want, intermediaryTokenAddress, _amount);
         uint256 secondSwapOutput = swap(intermediaryTokenAddress, fromTokenAddress, _amount);
         uint256 prof = secondSwapOutput.sub(_amount);
         return prof;

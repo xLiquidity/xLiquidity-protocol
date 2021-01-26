@@ -32,11 +32,6 @@ contract Vault is ERC20 {
     address public owner;
     address public trader;
 
-    modifier onlyOwner() {
-        require(msg.sender == owner, "!owner");
-        _;
-    }
-
     constructor(address _token, address _controller)
         public
         /**
@@ -47,6 +42,11 @@ contract Vault is ERC20 {
         token = IERC20(_token);
         owner = msg.sender;
         controller = _controller;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "!owner");
+        _;
     }
 
     modifier onlyGovernance {
