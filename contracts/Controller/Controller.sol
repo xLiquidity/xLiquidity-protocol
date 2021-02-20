@@ -1,11 +1,12 @@
+//SPDX-License-Identifier: MIT
 pragma solidity >=0.6.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/math/SafeMath.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-import "../../interfaces/IStrategy.sol";
+import "./interfaces/IStrategy.sol";
 
 contract Controller {
     using SafeERC20 for IERC20;
@@ -18,7 +19,7 @@ contract Controller {
     mapping(address => address) public vaults;
     mapping(address => address) public strategies;
 
-    constructor() public {
+    constructor() {
         governance = msg.sender;
         strategist = msg.sender;
     }
@@ -48,7 +49,7 @@ contract Controller {
         require(msg.sender == strategist || msg.sender == governance, "!strategist");
         address _currStrategy = strategies[_token];
 
-        if (_currentStrat != address(0)) {
+        if (_currStrategy != address(0)) {
             IStrategy(_currStrategy).withdrawAll();
         }
 
@@ -73,7 +74,7 @@ contract Controller {
     withdraws to the vault from the strategy
     must be called by the appropriate vault
     */
-    function withdraw(address _token, uint256 _amount) public view {
+    function withdraw(address _token, uint256 _amount) public {
         require(msg.sender == vaults[_token], "!vault");
         IStrategy(strategies[_token]).withdraw(_amount);
     }
