@@ -1,14 +1,16 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.5.0;
+pragma solidity >=0.7.3;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelinV2/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelinV2/contracts/math/SafeMath.sol";
+import "@openzeppelinV2/contracts/utils/Address.sol";
+import "@openzeppelinV2/contracts/token/ERC20/SafeERC20.sol";
+import "@1inchProtocol/contracts/IOneSplit.sol";
+import "usingtellor/contracts/UsingTellor.sol";
 
-import "./Controller.sol";
+import "../../interfaces/ITrader.sol";
+import "hardhat/console.sol";
+import "./UsingTellor.sol";
 
 contract Vault is ERC20 {
     /**
@@ -140,4 +142,9 @@ contract Vault is ERC20 {
         token.safeTransfer(controller, _bal);
         IController(controller).transferToStrategy(address(token), _bal);
     }
+
+    function getCurrentValue(uint256 _requestId) public view returns (bool ifRetrieve,
+    uint256 value, uint256 _timestampRetrieved) {
+        return getDataBefore(_requestId);
+}
 }
