@@ -1,4 +1,5 @@
-pragma solidity >=0.6.0;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.7.3;
 
 interface IController {
     // calls Strategy.withdraw() function of the Strategy contract; address is the Strategy contract address; Vault should be its only allowed caller

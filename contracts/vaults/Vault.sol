@@ -1,23 +1,22 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.7.3;
+pragma solidity ^0.7.3;
 
-import "@openzeppelinV2/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelinV2/contracts/math/SafeMath.sol";
-import "@openzeppelinV2/contracts/utils/Address.sol";
-import "@openzeppelinV2/contracts/token/ERC20/SafeERC20.sol";
-import "@1inchProtocol/contracts/IOneSplit.sol";
-import "usingtellor/contracts/UsingTellor.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/token/ERC20/ERC20.sol"; //added by ms
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/token/ERC20/IERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/math/SafeMath.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/utils/Address.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/token/ERC20/SafeERC20.sol";
 
-import "../../interfaces/ITrader.sol";
-import "hardhat/console.sol";
+import "./IVault.sol";
+import "./IController.sol";
 
 contract Vault is ERC20 {
     /**
         - user deposits funds into vault
         - user get lp tokens representing their share of the vault
         - user can withdraw their funds from vault, effectively burning the lp token
-        - if their aren't enough funds in the vault (if the funds are being used for strategy execution),
-             then we tell the strategy to liquidate enough funds to be able to give the user their funds
+        - if there aren't enough funds in the vault (if the funds are being used for strategy execution),
+             then signal the strategy (via Controller) to liquidate enough funds to be able to give the user their funds
     
      */
 
@@ -32,15 +31,15 @@ contract Vault is ERC20 {
     uint256 public max = 10000;
 
     address public owner;
-    address public trader;
+    address public controller; //change from trader to controller
 
     constructor(address _token, address _controller)
-        public
         /**
-         * @dev creates the token associated with the vault (i.e.: if depositing dai, then xDAI)
+         * @dev creates the token associated with the vault (e.g., if depositing DAI, then xDAI)
          */
         ERC20(string(abi.encodePacked("xLiquidity ", ERC20(_token).name())), string(abi.encodePacked("xl", ERC20(_token).symbol())))
     {
+        _setupDecimals(ERC20(_token).decimals());
         token = IERC20(_token);
         owner = msg.sender;
         controller = _controller;
@@ -51,25 +50,18 @@ contract Vault is ERC20 {
         _;
     }
 
-    modifier onlyGovernance {
-        require(msg.sender == governance, "!governance");
-        _;
-    }
-
+    // provides the balance of assets available in the vault and in the controller
     function balance() public view returns (uint256) {
         return token.balanceOf(address(this)).add(IController(controller).balanceOf(address(token)));
     }
 
     // sets the minimum amount needed
-    function setMin(uint256 _min) external onlyGovernance {
+    function setMin(uint256 _min) external onlyOwner {
+        require(_min <= max, "numerator cannot be greater than denominator");
         min = _min;
     }
 
-    function setGovernance(address _governance) public onlyGovernance {
-        governance = _governance;
-    }
-
-    function setController(address _controller) public onlyGovernance {
+    function setController(address _controller) public onlyOwner {
         controller = _controller;
     }
 
@@ -87,7 +79,7 @@ contract Vault is ERC20 {
         token.safeTransferFrom(msg.sender, address(this), _amount);
 
         uint256 _after = token.balanceOf(address(this));
-        _amount = _after.sub(_before); // Additional check for deflationary tokens
+        require(_amount == _after.sub(_before)); // Additional check for deflationary tokens - turned this into a require statement
 
         uint256 shares = 0;
 
@@ -141,9 +133,4 @@ contract Vault is ERC20 {
         token.safeTransfer(controller, _bal);
         IController(controller).transferToStrategy(address(token), _bal);
     }
-
-    function getCurrentValue(uint256 _requestId) public view returns (bool ifRetrieve,
-    uint256 value, uint256 _timestampRetrieved) {
-        return getDataBefore(_requestId);
-}
 }
