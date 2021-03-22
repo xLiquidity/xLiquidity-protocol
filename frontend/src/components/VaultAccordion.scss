@@ -1,0 +1,80 @@
+$niceBlue: rgb(0, 209, 255);
+$lightPurple: #f0f5f9;
+$niceBlack: rgb(33, 36, 41);
+
+.VaultAccordion {
+    .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0px;
+        overflow-wrap: break-word;
+        background-clip: border-box;
+        background-color: $niceBlack;
+        margin: 0px 0px 7px;
+        border-radius: 15px;
+        border: 1px solid rgba(0, 209, 255, 0.15);
+        font-weight: 500;
+        transition: background-color 0.1s ease-out 0s, border-color 0.15s ease-out 0s;
+        cursor: pointer;
+
+        box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px,
+            rgba(0, 0, 0, 0.04) 0px 16px 24px, rgba(0, 0, 0, 0.04) 0px 24px 32px;
+    }
+
+    .card:hover {
+        box-shadow: $niceBlue 0px 0px 9px 0px;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        height: 70px;
+        padding: 0;
+        background: none;
+    }
+
+    button {
+        height: 100%;
+        width: 100%;
+        color: inherit;
+    }
+
+    .btn:focus,
+    .btn.focus,
+    .btn:active {
+        outline: 0;
+        box-shadow: none;
+        text-decoration: none;
+    }
+
+    .btn:hover,
+    .btn-link:hover {
+        text-decoration: none;
+        color: white;
+    }
+
+    .vault-columns {
+        display: grid;
+        grid-template-columns: 210px 110px 160px 140px 200px 1fr;
+        font-weight: 900;
+        font-size: 20px;
+        width: 100%;
+        align-items: center;
+    }
+
+    .icon-col {
+        display: flex;
+        justify-content: flex-end;
+
+        a {
+            margin-right: 20px;
+        }
+    }
+
+    .AssetIcon {
+        // transform: rotate(-180deg);
+        transition: transform 0.1s linear 0s;
+        margin-right: 20px !important;
+    }
+}

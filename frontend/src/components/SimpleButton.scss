@@ -1,0 +1,25 @@
+$niceBlue: rgb(0, 209, 255);
+
+.SimpleButton {
+    button {
+        justify-content: center;
+        text-align: center;
+        background: linear-gradient(135deg, $niceBlue, #609ffe);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 550;
+        border: none;
+        border-radius: 4px;
+        outline: none;
+        transition: 0.3s;
+        padding: 0 32px;
+        text-transform: uppercase;
+        width: 10rem !important;
+    }
+
+    button:hover {
+        box-shadow: 0 2px 8px rgba(0, 34, 55, 0.2);
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
