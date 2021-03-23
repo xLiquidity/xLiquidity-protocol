@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: MIT
-pragma solidity >=0.6.0;
+pragma solidity ^0.7.3;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/token/ERC20/IERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/math/SafeMath.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/utils/Address.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/token/ERC20/SafeERC20.sol";
 
-import "./interfaces/IStrategy.sol";
+import "IStrategy.sol";
 
 contract Controller {
     using SafeERC20 for IERC20;
@@ -58,8 +58,7 @@ contract Controller {
 
     function transferToStrategy(address _token, uint256 _amount) public {
         address _currStrategy = strategies[_token];
-        address _want = IStrategy(_currStrategy).want();
-
+        // address _want = IStrategy(_currStrategy).want(); - This is for some functionality not currently in this protocol
         // if the _token is not _want, then we should probably convert the token to want
 
         IERC20(_token).safeTransfer(_currStrategy, _amount);
