@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
-=======
-pragma solidity >=0.5.0;
->>>>>>> b7688d606f28727fd3eb126f65cb34bbbb665fa2
+pragma solidity >=0.7.0;
 
 interface IVault {
     function token() external view returns (address);
@@ -33,7 +29,3 @@ interface IVault {
     // withdraws maximum amount of native token from the vault
     function withdrawAll() external;
 }
-<<<<<<< HEAD
-
-=======
->>>>>>> b7688d606f28727fd3eb126f65cb34bbbb665fa2

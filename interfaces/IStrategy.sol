@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.3;
-=======
-pragma solidity >=0.6.0;
->>>>>>> b7688d606f28727fd3eb126f65cb34bbbb665fa2
+pragma solidity >=0.7.0;
 
 interface IStrategy {
     // the native token
