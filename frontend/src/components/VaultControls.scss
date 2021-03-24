@@ -1,0 +1,16 @@
+$niceGray: rgb(195, 197, 203);
+
+.VaultControls {
+    vertical-align: middle;
+
+    .input-header,
+    .input-wrapper {
+        display: flex;
+    }
+
+    .input-header {
+        text-transform: uppercase;
+        color: $niceGray;
+        margin: 0.2rem;
+    }
+}
