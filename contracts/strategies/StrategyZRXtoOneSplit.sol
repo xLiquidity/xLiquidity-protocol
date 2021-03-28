@@ -1,12 +1,40 @@
 pragma solidity >=0.5.0;
 
-import "@openzeppelinV2/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelinV2/contracts/math/SafeMath.sol";
-import "@openzeppelinV2/contracts/utils/Address.sol";
-import "@openzeppelinV2/contracts/token/ERC20/SafeERC20.sol";
-import "@1inchProtocol/contracts/IOneSplit.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../../interfaces/IController.sol";
+
+interface IOneSplit {
+    function swap(
+        IERC20 fromToken,
+        IERC20 destToken,
+        uint256 amount,
+        uint256 minReturn,
+        uint256[] memory distribution,
+        uint256 flags
+    ) public payable returns (uint256 returnAmount);
+
+    function getExpectedReturn(
+        address fromToken,
+        address destToken,
+        uint256 amount,
+        uint256 parts,
+        uint256 flags, // See constants in IOneSplit.sol
+        uint256 destTokenEthPriceTimesGasPrice
+    )
+        external
+        view
+        returns (
+            uint256 returnAmount,
+            uint256 estimateGasAmount,
+            uint256[] memory distribution
+        );
+}
+
 
 contract StrategyZRXtoOneSplit {
     address payable owner;

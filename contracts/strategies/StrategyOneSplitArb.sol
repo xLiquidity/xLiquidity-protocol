@@ -1,13 +1,14 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/token/ERC20/IERC20.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/math/SafeMath.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/utils/Address.sol";
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v3.4/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-import "IController.sol";
-import "IStrategy.sol";
+import "../../interfaces/IController.sol";
+import "../../interfaces/IStrategy.sol";
 
 /*
  A strategy must implement the following calls;
@@ -61,6 +62,7 @@ contract StrategyOneSplitArb {
     address public governance;
     address public controller;
     address public strategist;
+    address ONE_SPLIT_ADDRESS = 0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E;
 
     // fees
     uint256 public withdrawalFee = 0;
@@ -82,20 +84,23 @@ contract StrategyOneSplitArb {
         return "StrategyOneSplitArb";
     }
 
-    // function execute(address intermediaryTokenAddress, uint256 _amount) public isAuthorized returns (uint256 prof) {
-    //     uint256(firstReturnAmount, firstEstimatedGasAmount, _) = getExpectedReturn(want, intermediaryTokenAddress, _amount);
-    //     uint256(returnAmount, estimatedGasAmount, _) = getExpectedReturn(
-    //         intermediaryTokenAddress,
-    //         want,
-    //         firstReturnAmount.sub(firstEstimatedGasAmount)
-    //     );
-    //     require(returnAmount.sub(estimatedGasAmount > _amount), "!prof");
+    function execute(address intermediaryTokenAddress, uint256 _amount) public isAuthorized returns (uint256 prof) {
+        IOneSplit _oneSplitContract = IOneSplit(ONE_SPLIT_ADDRESS);
 
-    //     uint256 firstSwapOutput = swap(want, intermediaryTokenAddress, _amount);
-    //     uint256 secondSwapOutput = swap(intermediaryTokenAddress, fromTokenAddress, _amount);
-    //     uint256 prof = secondSwapOutput.sub(_amount);
-    //     return prof;
-    // }
+        uint256(firstReturnAmount, firstEstimatedGasAmount, _) = _oneSplitContract.getExpectedReturn(want, intermediaryTokenAddress, _amount);
+        uint256(returnAmount, estimatedGasAmount, _) = _oneSplitContract.getExpectedReturn(
+            intermediaryTokenAddress,
+            want,
+            firstReturnAmount.sub(firstEstimatedGasAmount)
+        );
+
+        require(returnAmount.sub(estimatedGasAmount > _amount), "!prof");
+
+        uint256 firstSwapOutput = _oneSplitContract.swap(want, intermediaryTokenAddress, _amount);
+        uint256 secondSwapOutput = _oneSplitContract.swap(intermediaryTokenAddress, fromTokenAddress, _amount);
+        uint256 prof = secondSwapOutput.sub(_amount);
+        return prof;
+    }
 
     // Controller only function for creating additional rewards from dust
     function withdraw(IERC20 _asset) external isAuthorized returns (uint256 balance) {
