@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../../interfaces/IStrategy.sol";
 
-import "hardhat/console.sol"
+import "hardhat/console.sol";
 
 contract Controller {
     using SafeERC20 for IERC20;
