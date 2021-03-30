@@ -11,7 +11,7 @@ import "usingtellor/contracts/UsingTellor.sol";
 import "IVault.sol";
 import "IController.sol";
 
-import "hardhat/console.sol"
+import "hardhat/console.sol";
 
 contract Vault is ERC20,UsingTellor {
     /**
