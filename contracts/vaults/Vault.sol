@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.7.0;
+pragma solidity >=0.7.3;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -8,12 +8,12 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "usingtellor/contracts/UsingTellor.sol";
 
-import "IVault.sol";
-import "IController.sol";
+import "../interfaces/IVault.sol";
+import "../interfaces/IController.sol";
 
 import "hardhat/console.sol";
 
-contract Vault is ERC20,UsingTellor {
+contract Vault is ERC20, UsingTellor {
     /**
         - user deposits funds into vault
         - user get lp tokens representing their share of the vault
@@ -36,7 +36,7 @@ contract Vault is ERC20,UsingTellor {
     address public owner;
     address public controller; //change from trader to controller
 
-    constructor(address _token, address _controller, address _tellorAddress)
+    constructor(address _token, address _controller, address payable _tellorAddress) UsingTellor(_tellorAddress)
         /**
          * @dev creates the token associated with the vault (e.g., if depositing DAI, then xDAI)
          */
@@ -46,18 +46,11 @@ contract Vault is ERC20,UsingTellor {
         token = IERC20(_token);
         owner = msg.sender;
         controller = _controller;
-        UsingTellor(_tellorAddress);
     }
 
     modifier onlyOwner() {
         require(msg.sender == owner, "!owner");
         _;
-    }
-    
-    // oracle shows current price data to vault
-    function getCurrentValue(uint256 _requestId) public view returns (bool ifRetrieve,
-    uint256 value, uint256 _timestampRetrieved) {
-        return getDataBefore(_requestId);
     }
 
     // provides the balance of assets available in the vault and in the controller

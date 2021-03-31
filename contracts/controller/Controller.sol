@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity >=0.7.3;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-import "../../interfaces/IStrategy.sol";
+import "../interfaces/IStrategy.sol";
 
 import "hardhat/console.sol";
 

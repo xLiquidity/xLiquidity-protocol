@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity >=0.7.3;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -7,8 +7,8 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-import "../../interfaces/IController.sol";
-import "../../interfaces/IStrategy.sol";
+import "../interfaces/IController.sol";
+import "../interfaces/IStrategy.sol";
 
 /*
  A strategy must implement the following calls;
@@ -31,21 +31,21 @@ interface IOneSplit {
         uint256 minReturn,
         uint256[] memory distribution,
         uint256 flags
-    ) public payable returns (uint256 returnAmount);
+    ) external payable returns (uint256 returnAmount);
 
     function getExpectedReturn(
         address fromToken,
         address destToken,
         uint256 amount,
         uint256 parts,
-        uint256 flags, // See constants in IOneSplit.sol
-        uint256 destTokenEthPriceTimesGasPrice
+        uint256 flags // See constants in IOneSplit.sol
+        // uint256 destTokenEthPriceTimesGasPrice //This does not exist in current 1inch contract
     )
         external
         view
         returns (
             uint256 returnAmount,
-            uint256 estimateGasAmount,
+            // uint256 estimateGasAmount,
             uint256[] memory distribution
         );
 }
@@ -66,7 +66,11 @@ contract StrategyOneSplitArb {
 
     // fees
     uint256 public withdrawalFee = 0;
+
     constructor(address _controller, address _want) {
+        want = _want;
+        governance = msg.sender;
+        strategist = msg.sender;
         controller = _controller;
     }
 
@@ -84,20 +88,42 @@ contract StrategyOneSplitArb {
         return "StrategyOneSplitArb";
     }
 
-    function execute(address intermediaryTokenAddress, uint256 _amount) public isAuthorized returns (uint256 prof) {
+    function execute(address intermediaryTokenAddress, uint256 _amount) public isAuthorized returns (uint256) {
         IOneSplit _oneSplitContract = IOneSplit(ONE_SPLIT_ADDRESS);
 
-        uint256(firstReturnAmount, firstEstimatedGasAmount, _) = _oneSplitContract.getExpectedReturn(want, intermediaryTokenAddress, _amount);
-        uint256(returnAmount, estimatedGasAmount, _) = _oneSplitContract.getExpectedReturn(
+        (uint256 firstReturnAmount, uint256[] memory firstDistribution) = _oneSplitContract.getExpectedReturn(
+            want, 
+            intermediaryTokenAddress, 
+            _amount, 
+            3, 
+            0
+        );
+        (uint256 returnAmount, uint256[] memory secondDistribution) = _oneSplitContract.getExpectedReturn(
             intermediaryTokenAddress,
             want,
-            firstReturnAmount.sub(firstEstimatedGasAmount)
+            firstReturnAmount,
+            3,
+            0
         );
 
-        require(returnAmount.sub(estimatedGasAmount > _amount), "!prof");
+        require(returnAmount > _amount, "!prof");
 
-        uint256 firstSwapOutput = _oneSplitContract.swap(want, intermediaryTokenAddress, _amount);
-        uint256 secondSwapOutput = _oneSplitContract.swap(intermediaryTokenAddress, fromTokenAddress, _amount);
+        uint256 firstSwapOutput = _oneSplitContract.swap(
+            IERC20(want),
+            IERC20(intermediaryTokenAddress),
+            _amount,
+            firstReturnAmount,
+            firstDistribution,
+            0
+        );
+        uint256 secondSwapOutput = _oneSplitContract.swap(
+            IERC20(intermediaryTokenAddress),
+            IERC20(want),
+            firstSwapOutput,
+            returnAmount,
+            secondDistribution,
+            0
+        );
         uint256 prof = secondSwapOutput.sub(_amount);
         return prof;
     }
@@ -111,6 +137,17 @@ contract StrategyOneSplitArb {
 
     // Withdraw partial funds, normally used with a vault withdrawal
     function withdraw(uint256 _amount) external onlyController {
+        internalWithdraw(_amount);
+    }
+
+    // // Withdraw all funds, normally used when migrating strategies
+    function withdrawAll() external onlyController returns (uint256 balance) {
+        balance = balanceOf();
+        internalWithdraw(balance);
+    }
+
+        // Internal function for withdrawof funds funds
+    function internalWithdraw(uint256 _amount) internal onlyController {
         uint256 _balance = balanceOf();
         require(_amount < _balance, "amount too large");
 
@@ -118,12 +155,6 @@ contract StrategyOneSplitArb {
         require(_vault != address(0), "!vault"); // additional protection so we don't burn the funds
         IERC20(want).safeTransfer(_vault, _amount);
     }
-
-    // // Withdraw all funds, normally used when migrating strategies
-    // function withdrawAll() external onlyController returns (uint256 balance) {
-    //     balance = balanceOf();
-    //     withdraw(balance);
-    // }
 
     function balanceOf() public view returns (uint256) {
         return IERC20(want).balanceOf(address(this));
