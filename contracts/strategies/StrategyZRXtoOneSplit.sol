@@ -1,4 +1,4 @@
-pragma solidity >=0.5.0;
+pragma solidity ^0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -16,7 +16,7 @@ interface IOneSplit {
         uint256 minReturn,
         uint256[] memory distribution,
         uint256 flags
-    ) public payable returns (uint256 returnAmount);
+    ) external payable returns (uint256 returnAmount);
 
     function getExpectedReturn(
         address fromToken,
@@ -37,8 +37,11 @@ interface IOneSplit {
 
 
 contract StrategyZRXtoOneSplit {
-    address payable owner;
-    address payable controller;
+    using SafeERC20 for IERC20;
+    using Address for address;
+    using SafeMath for uint256;
+
+    address public controller;
 
     // OneSplit Config; oneinch exchange
     address ONE_SPLIT_ADDRESS = 0xC586BeF4a0992C495Cf22e1aeEE4E446CECDee0E;
@@ -56,7 +59,8 @@ contract StrategyZRXtoOneSplit {
         _;
     }
 
-    constructor(address _controller) public payable {
+
+    constructor(address _controller) {
         controller = _controller;
     }
 
@@ -67,7 +71,7 @@ contract StrategyZRXtoOneSplit {
         bytes memory _0xData,
         uint256 _1SplitMinReturn,
         uint256[] memory _1SplitDistribution
-    ) public payable onlyOwner {
+    ) public payable onlyController {
         _arb(_fromToken, _toToken, _fromAmount, _0xData, _1SplitMinReturn, _1SplitDistribution);
     }
 
@@ -145,7 +149,8 @@ contract StrategyZRXtoOneSplit {
         _fromIERC20.approve(ZRX_ERC20_PROXY_ADDRESS, _amount);
 
         // Swap tokens
-        address(ZRX_EXCHANGE_ADDRESS).call.value(msg.value)(_calldataHexString);
+        // @dev need to update below swap functionality
+        // address(ZRX_EXCHANGE_ADDRESS).call{value: msg.value}(_calldataHexString);
 
         // Reset approval
         _fromIERC20.approve(ZRX_ERC20_PROXY_ADDRESS, 0);
@@ -191,7 +196,7 @@ contract StrategyZRXtoOneSplit {
     ) public onlyController {
         uint256 _balance = IERC20(_tokenAddress).balanceOf(address(this));
 
-        address _vault = IController(controller).vaults(address(_tokenAddress));
+        _vault = IController(controller).vaults(address(_tokenAddress));
         require(_vault != address(0), "!vault"); // additional protection so we don't burn the funds
         IERC20(_tokenAddress).safeTransfer(_vault, _amount);
     }
@@ -199,12 +204,12 @@ contract StrategyZRXtoOneSplit {
     // withdraws tokens to the Vault
     function withdrawAll(address _tokenAddress, address _vault) public onlyController {
         uint256 balance = IERC20(_tokenAddress).balanceOf(address(this));
-        IERC20(_tokenAddress).safeTranser(_vault, balance);
+        IERC20(_tokenAddress).safeTransfer(_vault, balance);
     }
 
-    function withdrawEther() public onlyController {
-        address self = address(this); // workaround for a possible solidity bug
-        uint256 balance = self.balance;
-        address(OWNER).transfer(balance);
-    }
+    // function withdrawEther() public onlyController payable {
+    //     address self = address(this); // workaround for a possible solidity bug
+    //     uint256 balance = self.balance;
+    //     address(controller).transfer(balance);
+    // }
 }

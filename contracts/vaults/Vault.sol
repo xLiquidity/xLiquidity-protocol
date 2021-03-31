@@ -6,13 +6,14 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "usingtellor/contracts/UsingTellor.sol";
 
-import "IVault.sol";
-import "IController.sol";
+import "../../interfaces/IVault.sol";
+import "../../interfaces/IController.sol";
 
-import "hardhat/console.sol"
+import "hardhat/console.sol";
 
-contract Vault is ERC20 {
+contract Vault is ERC20, UsingTellor {
     /**
         - user deposits funds into vault
         - user get lp tokens representing their share of the vault
@@ -35,7 +36,7 @@ contract Vault is ERC20 {
     address public owner;
     address public controller; //change from trader to controller
 
-    constructor(address _token, address _controller)
+    constructor(address _token, address _controller, address payable _tellorAddress) UsingTellor(_tellorAddress)
         /**
          * @dev creates the token associated with the vault (e.g., if depositing DAI, then xDAI)
          */
@@ -46,6 +47,7 @@ contract Vault is ERC20 {
         owner = msg.sender;
         controller = _controller;
     }
+
 
     modifier onlyOwner() {
         require(msg.sender == owner, "!owner");

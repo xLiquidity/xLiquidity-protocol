@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -31,7 +31,7 @@ interface IOneSplit {
         uint256 minReturn,
         uint256[] memory distribution,
         uint256 flags
-    ) public payable returns (uint256 returnAmount);
+    ) external payable returns (uint256 returnAmount);
 
     function getExpectedReturn(
         address fromToken,
@@ -66,6 +66,7 @@ contract StrategyOneSplitArb {
 
     // fees
     uint256 public withdrawalFee = 0;
+
     constructor(address _controller, address _want) {
         controller = _controller;
     }
@@ -85,21 +86,21 @@ contract StrategyOneSplitArb {
     }
 
     function execute(address intermediaryTokenAddress, uint256 _amount) public isAuthorized returns (uint256 prof) {
-        IOneSplit _oneSplitContract = IOneSplit(ONE_SPLIT_ADDRESS);
+        // IOneSplit _oneSplitContract = IOneSplit(ONE_SPLIT_ADDRESS);
 
-        uint256(firstReturnAmount, firstEstimatedGasAmount, _) = _oneSplitContract.getExpectedReturn(want, intermediaryTokenAddress, _amount);
-        uint256(returnAmount, estimatedGasAmount, _) = _oneSplitContract.getExpectedReturn(
-            intermediaryTokenAddress,
-            want,
-            firstReturnAmount.sub(firstEstimatedGasAmount)
-        );
+        // (uint256 firstReturnAmount,uint256 firstEstimatedGasAmount ) = _oneSplitContract.getExpectedReturn(want, intermediaryTokenAddress, _amount);
+        // (uint256 returnAmount, uint256 estimatedGasAmount) = _oneSplitContract.getExpectedReturn(
+        //     intermediaryTokenAddress,
+        //     want,
+        //     firstReturnAmount.sub(firstEstimatedGasAmount)
+        // );
 
-        require(returnAmount.sub(estimatedGasAmount > _amount), "!prof");
+        // require(returnAmount.sub(estimatedGasAmount > _amount), "!prof");
 
-        uint256 firstSwapOutput = _oneSplitContract.swap(want, intermediaryTokenAddress, _amount);
-        uint256 secondSwapOutput = _oneSplitContract.swap(intermediaryTokenAddress, fromTokenAddress, _amount);
-        uint256 prof = secondSwapOutput.sub(_amount);
-        return prof;
+        // uint256 firstSwapOutput = _oneSplitContract.swap(want, intermediaryTokenAddress, _amount);
+        // uint256 secondSwapOutput = _oneSplitContract.swap(intermediaryTokenAddress, want, _amount);
+        // prof = secondSwapOutput.sub(_amount);
+        // return prof;
     }
 
     // Controller only function for creating additional rewards from dust
