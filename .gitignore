@@ -1,6 +1,8 @@
 node_modules
+.env
 
 #hardhat files
 cache
 artifacts
 frontend/src/hardhat
+

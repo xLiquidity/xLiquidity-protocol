@@ -13,7 +13,7 @@ import "../interfaces/IController.sol";
 
 import "hardhat/console.sol";
 
-contract Vault is ERC20, UsingTellor {
+contract Vault is ERC20 {
     /**
         - user deposits funds into vault
         - user get lp tokens representing their share of the vault
@@ -36,9 +36,9 @@ contract Vault is ERC20, UsingTellor {
     address public owner;
     address public controller; //change from trader to controller
 
-    constructor(address _token, address _controller, address payable _tellorAddress) UsingTellor(_tellorAddress)
+    constructor(address _token, address _controller) 
         /**
-         * @dev creates the token associated with the vault (e.g., if depositing DAI, then xDAI)
+         * @dev creates the token associated with the vault (e.g., if depositing DAI, then xlDAI)
          */
         ERC20(string(abi.encodePacked("xLiquidity ", ERC20(_token).name())), string(abi.encodePacked("xl", ERC20(_token).symbol())))
     {
